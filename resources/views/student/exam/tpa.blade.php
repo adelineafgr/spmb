@@ -9,7 +9,7 @@
             @foreach($soalTPA as $index => $soal)
                 <div class="bg-white p-6 rounded shadow">
                     <p class="mb-4 font-semibold">Soal {{ $index + 1 }}: {{ $soal['pertanyaan'] }}</p>
-                    @foreach($soal['pilihan'] as $opsiIndex => $opsi)
+                    @foreach($soal['opsi'] as $opsiIndex => $opsi)
                         <label class="block mb-2">
                             <input type="radio" name="answers[{{ $index }}]" value="{{ $opsiIndex }}" required>
                             {{ chr(65 + $opsiIndex) }}. {{ $opsi }}

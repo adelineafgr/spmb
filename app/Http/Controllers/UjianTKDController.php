@@ -12,8 +12,11 @@ class UjianTKDController extends Controller
 {
     public function index()
     {
-        $student = Auth::user();
+        $user = Auth::user();
+        $student = $user->student; // ini dapetin data dari table students
         $exam = Exam::where('name', 'TKD')->firstOrFail();
+        
+
 
         $studentExam = StudentExam::firstOrCreate(
             [
@@ -308,7 +311,8 @@ class UjianTKDController extends Controller
 
     public function submit(Request $request)
     {
-        $student = Auth::user();
+        $user = Auth::user();
+        $student = $user->student; // ini dapetin data dari table students
         $exam = Exam::where('name', 'TKD')->firstOrFail();
 
         $kunciJawaban = session('tkd_kunci');

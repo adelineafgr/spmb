@@ -16,6 +16,7 @@ class UjianTPAController extends Controller
         $student = $user->student; // ini dapetin data dari table students
 
         $exam = Exam::where('name', 'TPA')->firstOrFail();
+        
 
         $studentExam = StudentExam::firstOrCreate(
             [
@@ -303,7 +304,8 @@ class UjianTPAController extends Controller
 
     public function submit(Request $request)
     {
-        $student = Auth::user();
+        $user = Auth::user();
+        $student = $user->student; // ini dapetin data dari table students
         $exam = Exam::where('name', 'TPA')->firstOrFail();
 
         $kunciJawaban = session('tpa_kunci');

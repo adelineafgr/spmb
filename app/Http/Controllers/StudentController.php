@@ -19,7 +19,7 @@ class StudentController extends Controller
 
     public function createRegistrationForm()
     {
-        $jurusan = ['Kuliner', 'Teknik Pengelasan', 'Teknik Logistik'];
+        $jurusan = ['Kuliner', 'Pengelasan', 'Logistik'];
 
         return view('student.register_data', compact('jurusan'));
     }
