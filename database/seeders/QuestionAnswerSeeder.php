@@ -33,65 +33,6 @@ class QuestionAnswerSeeder extends Seeder
                 $this->call(SubjectSeeder::class); // Pastikan SubjectSeeder dijalankan duluan
                 $subject = Subject::where('name', $subjectName)->first();
             }
-
-            // Buat 10 soal untuk setiap mata pelajaran
-            for ($i = 1; $i <= 10; $i++) {
-                $question = Question::create([
-                    'exam_id' => $tkdExam->id,
-                    'subject_id' => $subject->id,
-                    'question_text' => "Ini adalah soal ke-$i untuk mata pelajaran {$subject->name}?",
-                ]);
-
-                // Buat 4 pilihan jawaban, dengan satu yang benar
-                Answer::create([
-                    'question_id' => $question->id,
-                    'answer_text' => "Pilihan A soal {$i} {$subject->name}",
-                    'is_correct' => false,
-                ]);
-                Answer::create([
-                    'question_id' => $question->id,
-                    'answer_text' => "Pilihan B soal {$i} {$subject->name}",
-                    'is_correct' => true, // Ini adalah jawaban benar
-                ]);
-                Answer::create([
-                    'question_id' => $question->id,
-                    'answer_text' => "Pilihan C soal {$i} {$subject->name}",
-                    'is_correct' => false,
-                ]);
-                Answer::create([
-                    'question_id' => $question->id,
-                    'answer_text' => "Pilihan D soal {$i} {$subject->name}",
-                    'is_correct' => false,
-                ]);
-            }
-        }
-        // --- Soal TPA (BARU) ---
-        $tpaExam = Exam::where('name', 'TPA')->first();
-        $majors = [
-            'Kuliner',
-            'Logistik',
-            'Pengelasan'
-        ];
-
-        foreach ($majors as $majorName) {
-            $majorSubject = Subject::where('name', $majorName)->first();
-            if (!$majorSubject) {
-                // Ini seharusnya tidak terjadi jika SubjectSeeder sudah menambahkan jurusan
-                continue;
-            }
-
-            // Setiap jurusan 15 soal
-            for ($i = 1; $i <= 15; $i++) {
-                $question = Question::create([
-                    'exam_id' => $tpaExam->id,
-                    'subject_id' => $majorSubject->id, // Gunakan subject_id untuk menandai jurusan
-                    'question_text' => "TPA Jurusan {$majorName}: Soal ke-$i. Ini pertanyaan khusus {$majorName}?",
-                ]);
-                Answer::create(['question_id' => $question->id, 'answer_text' => "Jawaban A - {$majorName}", 'is_correct' => false]);
-                Answer::create(['question_id' => $question->id, 'answer_text' => "Jawaban B - {$majorName}", 'is_correct' => false]);
-                Answer::create(['question_id' => $question->id, 'answer_text' => "Jawaban C - {$majorName}", 'is_correct' => true]); // Jawaban benar
-                Answer::create(['question_id' => $question->id, 'answer_text' => "Jawaban D - {$majorName}", 'is_correct' => false]);
-            }
         }
 
         $minatBakatExam = Exam::where('name', 'Minat Bakat')->first();
