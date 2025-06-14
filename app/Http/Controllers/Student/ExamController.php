@@ -65,23 +65,21 @@ class ExamController extends Controller
             }
 
             $questionsForMajor1 = $exam->questions()
-                                      ->where('subject_id', $majorSubject1->id)
-                                      ->with('answers', 'subject')
-                                      ->get();
+                ->where('subject_id', $majorSubject1->id)
+                ->with('answers', 'subject')
+                ->get();
 
             $questionsForMajor2 = $exam->questions()
-                                      ->where('subject_id', $majorSubject2->id)
-                                      ->with('answers', 'subject')
-                                      ->get();
+                ->where('subject_id', $majorSubject2->id)
+                ->with('answers', 'subject')
+                ->get();
 
             $questions = $questionsForMajor1->merge($questionsForMajor2)->groupBy('subject.name');
-
         } elseif ($exam->name === 'Minat Bakat') { // BARU: Logika untuk Minat Bakat
             // Ambil semua soal Minat Bakat, tidak perlu pengelompokan subjek karena hasilnya adalah rekomendasi
             $questions = $exam->questions()->with('answers')->get();
             $questions = collect(['Tes Minat Bakat' => $questions]); // Kelompokkan dalam satu kategori untuk tampilan
-        }
-        else {
+        } else {
             $questions = $exam->questions()->with('answers')->get();
             $questions = collect(['Umum' => $questions]);
         }
@@ -138,7 +136,7 @@ class ExamController extends Controller
             }
         } elseif ($exam->name === 'TPA') {
             $pointPerQuestion = 2;
-             foreach ($studentExam->studentAnswers()->whereIn('question_id', $request->input('answers', []))->get() as $studentAnswer) {
+            foreach ($studentExam->studentAnswers()->whereIn('question_id', $request->input('answers', []))->get() as $studentAnswer) {
                 if ($studentAnswer->chosenAnswer && $studentAnswer->chosenAnswer->is_correct) {
                     $score += $pointPerQuestion;
                 }
@@ -159,7 +157,7 @@ class ExamController extends Controller
             // Untuk saat ini, kita akan kirim via session ke halaman result.
             $request->session()->put('minat_bakat_recommendation', $recommendedMajor);
             // score untuk minat bakat bisa 0 atau biarkan null, karena tidak relevan
-            $score = 0; // Atur skor minat bakat ke 0
+            $score = 20; // Atur skor minat bakat ke 0
         }
 
 
@@ -194,5 +192,58 @@ class ExamController extends Controller
         $minatBakatRecommendation = session('minat_bakat_recommendation');
 
         return view('student.exam.result', compact('studentExam', 'correctAnswers', 'minatBakatRecommendation'));
+    }
+
+    public function showTkdBindo()
+    {
+        // Bisa juga simpan waktu mulai ujian di session (opsional)
+        session(['tkd_bindo_start_time' => now()]);
+
+        // Misalnya exam_id = 1 untuk TKD B. Indonesia
+        $exam = (object)[
+            'id' => 1,
+            'name' => 'TKD - Bahasa Indonesia',
+        ];
+
+        return view('student.exam.tkd_bindo', compact('exam'));
+    }
+
+
+
+    public function submitTkdBindo(Request $request)
+    {
+        $questions = [
+            ['question' => 'Gagasan utama dari sebuah paragraf disebut...', 'answer' => 'C'],
+            ['question' => "Sinonim dari kata 'pandai' adalah...", 'answer' => 'B'],
+            ['question' => "Antonim dari kata 'besar' adalah...", 'answer' => 'C'],
+            ['question' => "Teks prosedur berisi tentang...", 'answer' => 'B'],
+            ['question' => "Kalimat efektif adalah kalimat yang...", 'answer' => 'C'],
+            ['question' => "Kata baku dari 'aktifitas' adalah...", 'answer' => 'A'],
+            ['question' => 'Tanda baca yang digunakan untuk mengakhiri kalimat perintah adalah...', 'answer' => 'D'],
+            ['question' => 'Kutipan dari seseorang disebut...', 'answer' => 'D'],
+            ['question' => 'Kalimat yang menyatakan ajakan adalah...', 'answer' => 'A'],
+            ['question' => 'Cerpen termasuk jenis...', 'answer' => 'C'],
+        ];
+
+        $answers = $request->input('answers', []);
+        $score = 0;
+
+        foreach ($questions as $index => $question) {
+            $userAnswer = $answers[$index] ?? null;
+            if ($userAnswer === $question['answer']) {
+                $score += 1;
+            }
+        }
+
+        // Simpan ke DB
+        StudentExam::create([
+            'student_id' => Auth::id(),
+            'exam_id' => 1,
+            'score' => $score,
+            'start_time' => now()->subMinutes(10), // atau bisa pake session
+            'end_time' => now()
+        ]);
+
+        return redirect()->route('dashboard')->with('success', 'Ujian berhasil dikumpulkan. Skor kamu: ' . $score);
     }
 }

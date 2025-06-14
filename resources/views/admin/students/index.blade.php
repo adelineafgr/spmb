@@ -25,7 +25,7 @@
                                     <th scope="col" class="py-3 px-6">Skor TKD</th>
                                     <th scope="col" class="py-3 px-6">Skor TPA</th>
                                     <th scope="col" class="py-3 px-6">Skor Minat Bakat</th>
-                                    <th scope="col" class="py-3 px-6">Total Skor (TKD+TPA)</th>
+                                    <th scope="col" class="py-3 px-6">Total Skor</th>
                                     <th scope="col" class="py-3 px-6">Rekomendasi Jurusan</th>
                                     {{-- <th scope="col" class="py-3 px-6">Aksi</th> --}}
                                 </tr>

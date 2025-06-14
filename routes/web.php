@@ -4,6 +4,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController; // Pastikan ini diimpor dengan benar
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\Student\ExamController;
+use App\Http\Controllers\UjianTKDController; // Pastikan ini diimpor dengan benar
+use App\Http\Controllers\UjianTPAController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -58,4 +60,18 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
         return redirect('/login'); // Redirect to your desired page after logout
     })->name('logout'); // Assign a name to the route for easier referencing
 });
+
+
+Route::get('/ujian/tkd', [UjianTKDController::class, 'index'])->name('student.exam.tkd');
+Route::post('/ujian/tkd', [UjianTKDController::class, 'submit'])->name('student.exam.tkd.submit');
+
+
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/ujian/tpa', [UjianTPAController::class, 'index'])->name('student.exam.tpa');
+    Route::post('/ujian/tpa/submit', [UjianTPAController::class, 'submit'])->name('ujian.tpa.submit');
+});
+
+
+
 require __DIR__ . '/auth.php';

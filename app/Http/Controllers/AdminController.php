@@ -42,9 +42,9 @@ class AdminController extends Controller
                     $minatBakatRecommendation = 'Tidak ada rekomendasi (tidak ada jawaban)';
                 }
             }
-            $minatBakatScore = 0; // Skor minat bakat biasanya 0
+            $minatBakatScore = 20; // Skor minat bakat biasanya 0
 
-            $totalScore = $tkdScore + $tpaScore;
+            $totalScore = $minatBakatScore + $tkdScore + $tpaScore;
 
             return [
                 'name' => $student->user->name,
