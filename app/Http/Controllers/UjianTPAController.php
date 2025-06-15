@@ -597,7 +597,6 @@ class UjianTPAController extends Controller
         $nilaiAkhir = max($skor1, $skor2);
         $jurusanDipilih = $skor1 >= $skor2 ? $jurusan1 : $jurusan2;
 
-        dd($nilaiAkhir, $jurusanDipilih, $jurusan1, $jurusan2, $skor1, $skor2);
 
 
         StudentExam::updateOrCreate(
