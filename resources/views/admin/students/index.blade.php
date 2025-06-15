@@ -46,11 +46,11 @@
                                         <td class="py-4 px-6">{{ $student['pilihan_jurusan_2'] ?? '-' }}</td>
                                         <td class="py-4 px-6">{{ $student['skor_tkd'] ?? 0 }}</td>
                                         <td class="py-4 px-6">{{ $student['skor_tpa'] ?? 0 }}</td>
-                                        <td class="py-4 px-6">{{ $student['recommended_major'] ?? '-' }}</td>
+                                        <td class="py-4 px-6">{{ $student['jurusan_tpa'] }}</td>
                                         <td class="py-4 px-6">{{ $student['skor_minat_bakat'] ?? 0 }}</td>
-                                        <td class="py-4 px-6">{{ $student['recommended_major'] ?? '-' }}</td>
+                                        <td class="py-4 px-6">{{ $student['jurusan_minat_bakat'] }}</td>
                                         <td class="py-4 px-6 font-bold">{{ $student['total_skor'] ?? 0 }}</td>
-                                        <td class="py-4 px-6">{{ $student['recommended_major'] ?? '-' }}</td>
+                                        <td class="py-4 px-6">{{ $student['recommended_major'] }}</td>
                                     </tr>
                                 @empty
                                     <tr>

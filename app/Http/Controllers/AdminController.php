@@ -22,34 +22,24 @@ class AdminController extends Controller
         // Siapkan data untuk tabel index (sama seperti yang pernah di dashboard sebelumnya)
         $studentsData = $students->map(function ($student) {
             $tkdScore = $student->studentExams->where('exam.name', 'TKD')->first()->score ?? 0;
-            $tpaScore = $student->studentExams->where('exam.name', 'TPA')->first()->score ?? 0;
 
-            // Ambil data TPA
+            // === TPA ===
             $tpaExamResult = $student->studentExams->where('exam_id', 2)->first();
             $tpaScore = $tpaExamResult->score ?? 0;
-            $tpaRecommendation = $tpaExamResult->recommended_major ?? 'Tidak ada rekomendasi (tidak ada jawaban)';
+            $tpaRecommendation = $tpaExamResult->recommended_major ?? null;
 
-            // Minat Bakat
-            $minatBakatExamResult = $student->studentExams->where('exam.name', 'Minat Bakat')->first();
-            $minatBakatRecommendation = 'Belum Ujian';
-            if ($minatBakatExamResult) {
-                $minatBakatAnswers = $minatBakatExamResult->studentAnswers()->with('chosenAnswer')->get();
-                $majorScores = [];
-                foreach ($minatBakatAnswers as $sAnswer) {
-                    if ($sAnswer->chosenAnswer && $sAnswer->chosenAnswer->meta_data) {
-                        $major = $sAnswer->chosenAnswer->meta_data;
-                        $majorScores[$major] = ($majorScores[$major] ?? 0) + 1;
-                    }
-                }
-                if (!empty($majorScores)) {
-                    arsort($majorScores);
-                    $minatBakatRecommendation = key($majorScores);
-                } else {
-                    $minatBakatRecommendation = 'Tidak ada rekomendasi (tidak ada jawaban)';
-                }
-            }
-            $minatBakatScore = 20; // Skor minat bakat biasanya 0
-            $totalScore = $minatBakatScore + $tkdScore + $tpaScore;
+            // === Minat Bakat ===
+            $minatBakatExamResult = $student->studentExams->where('exam_id', 3)->first();
+            $minatBakatRecommendation =  $minatBakatExamResult->recommended_major ?? null;
+
+            $minatBakatScore = 20; // Kalau mau disesuaikan bisa aja nanti
+            $totalScore = $tkdScore + $tpaScore + $minatBakatScore;
+
+            // === Gabungan Rekomendasi ===
+            $combinedRecommendation = collect([$tpaRecommendation, $minatBakatRecommendation])
+                ->filter()
+                ->unique()
+                ->implode(', ');
 
             return [
                 'name' => $student->user->name,
@@ -59,11 +49,11 @@ class AdminController extends Controller
                 'pilihan_jurusan_2' => $student->pilihan_jurusan_2,
                 'skor_tkd' => $tkdScore,
                 'skor_tpa' => $tpaScore,
-                'jurusan_tpa' => $tpaRecommendation,
+                'jurusan_tpa' => $tpaRecommendation ?? 'Tidak ada',
                 'skor_minat_bakat' => $minatBakatScore,
-                'jurusan_minat_bakat' => $minatBakatRecommendation,
+                'jurusan_minat_bakat' => $minatBakatRecommendation ?? 'Tidak ada',
                 'total_skor' => $totalScore,
-                'recommended_major' => $minatBakatRecommendation,
+                'recommended_major' => $combinedRecommendation ?: 'Tidak ada',
                 'id' => $student->id,
             ];
         });
