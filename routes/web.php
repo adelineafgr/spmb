@@ -7,6 +7,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\Student\ExamController;
 use App\Http\Controllers\UjianTKDController; // Pastikan ini diimpor dengan benar
 use App\Http\Controllers\UjianTPAController;
+use App\Http\Controllers\StudentExamController; // Pastikan ini diimpor dengan benar
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -46,6 +47,7 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
     Route::put('/edit-data', [StudentController::class, 'updateRegistrationData'])->name('register_data.update');
     Route::get('/exams', [ExamController::class, 'index'])->name('exam.index');
     Route::get('/exams/results', [ExamController::class, 'showResults'])->name('exam.results');
+    
 
     // Rute Ujian
     Route::prefix('exam')->name('exam.')->group(function () {
@@ -73,6 +75,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/ujian/minatbakat', [MinatBakatController::class, 'index'])->name('student.exam.minatbakat');
     Route::post('/ujian/minatbakat', [MinatBakatController::class, 'submit'])->name('student.exam.minatbakat.submit');
 });
+
+Route::get('/student/hasil', [StudentController::class, 'result'])->name('student.hasil');
+
 
 
 

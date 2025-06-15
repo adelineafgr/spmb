@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Student;
 use Illuminate\Support\Facades\Auth;
 
+
 class StudentController extends Controller
 {
     public function dashboard()
@@ -64,5 +65,23 @@ class StudentController extends Controller
         $student->update($validated);
 
         return redirect()->route('student.dashboard')->with('success', 'Data berhasil diupdate.');
+    }
+
+    public function result()
+    {
+        $user = Auth::user();
+        $student = $user->student;
+
+        // Ambil data ujian dari student_exams
+        $tkd = $student->studentExams()->where('exam_id', 1)->first();
+        $tpa = $student->studentExams()->where('exam_id', 2)->first();
+        $minat = $student->studentExams()->where('exam_id', 3)->first();
+
+        // Nilai skor (jika ada)
+        $skorTKD = $tkd?->score ?? null;
+        $skorTPA = $tpa?->score ?? null;
+        $rekomendasi = $minat?->recommended_major ?? 'Belum tersedia'; // Asumsi: hasil minat bakat simpan rekomendasi jurusan
+
+        return view('student.hasil', compact('skorTKD', 'skorTPA', 'rekomendasi'));
     }
 }

@@ -116,6 +116,11 @@
                         </div>
                         @endforeach
                     </div>
+                    <div class="mt-8 text-center">
+                        <a href="{{ route('student.hasil') }}" class="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded">
+                            Lihat Hasil
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

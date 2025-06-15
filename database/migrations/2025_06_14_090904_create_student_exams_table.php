@@ -18,6 +18,7 @@ return new class extends Migration
             $table->timestamp('end_time')->nullable();   // Tetap nullable jika suatu saat mau pakai
             $table->integer('score')->nullable();
             $table->enum('status', ['pending', 'in_progress', 'completed', 'failed'])->default('pending');
+            $table->string('recommended_major')->nullable(); // Untuk menyimpan rekomendasi jurusan dari hasil minat bakat
             $table->timestamps();
 
             $table->unique(['student_id', 'exam_id']);
