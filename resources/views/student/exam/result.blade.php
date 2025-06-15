@@ -43,7 +43,7 @@
                         <div class="border rounded-lg p-4 bg-yellow-50">
                             <h4 class="text-xl font-semibold mb-2 text-yellow-800">Tes Minat Bakat</h4>
                             @if($minatBakatResult)
-                                <p>Rekomendasi Minat Bakat: <span class="font-bold text-lg text-yellow-700">{{ $minatBakatResult->notes ?? 'N/A' }}</span></p>
+                                <p>Rekomendasi Minat Bakat: <span class="font-bold text-lg text-yellow-700">{{ $minatBakatRecommendation ?? 'N/A' }}</span></p>
                                 <p class="text-sm text-gray-600">Total poin Minat Bakat: {{ $minatBakatResult->score ?? 'N/A' }}</p>
                                 <p class="text-sm text-gray-600">Nilai per soal: 4 poin</p>
                             @else

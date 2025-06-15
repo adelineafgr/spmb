@@ -16,6 +16,7 @@ class StudentExam extends Model
         'end_time',
         'score',
         'status',
+        'recommended_major',
     ];
 
     protected $casts = [

@@ -24,6 +24,12 @@ class AdminController extends Controller
             $tkdScore = $student->studentExams->where('exam.name', 'TKD')->first()->score ?? 0;
             $tpaScore = $student->studentExams->where('exam.name', 'TPA')->first()->score ?? 0;
 
+            // Ambil data TPA
+            $tpaExamResult = $student->studentExams->where('exam_id', 2)->first();
+            $tpaScore = $tpaExamResult->score ?? 0;
+            $tpaRecommendation = $tpaExamResult->recommended_major ?? 'Tidak ada rekomendasi (tidak ada jawaban)';
+
+            // Minat Bakat
             $minatBakatExamResult = $student->studentExams->where('exam.name', 'Minat Bakat')->first();
             $minatBakatRecommendation = 'Belum Ujian';
             if ($minatBakatExamResult) {
@@ -43,7 +49,6 @@ class AdminController extends Controller
                 }
             }
             $minatBakatScore = 20; // Skor minat bakat biasanya 0
-
             $totalScore = $minatBakatScore + $tkdScore + $tpaScore;
 
             return [
@@ -54,10 +59,12 @@ class AdminController extends Controller
                 'pilihan_jurusan_2' => $student->pilihan_jurusan_2,
                 'skor_tkd' => $tkdScore,
                 'skor_tpa' => $tpaScore,
+                'jurusan_tpa' => $tpaRecommendation,
                 'skor_minat_bakat' => $minatBakatScore,
+                'jurusan_minat_bakat' => $minatBakatRecommendation,
                 'total_skor' => $totalScore,
-                'rekomendasi_jurusan' => $minatBakatRecommendation,
-                'id' => $student->id
+                'recommended_major' => $minatBakatRecommendation,
+                'id' => $student->id,
             ];
         });
 

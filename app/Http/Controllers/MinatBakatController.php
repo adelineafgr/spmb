@@ -113,21 +113,21 @@ class MinatBakatController extends Controller
         if ($maxScore === 0) { // Jika tidak ada jawaban sama sekali (seharusnya tidak terjadi karena required)
             $recommendation = 'Tidak dapat menentukan rekomendasi karena tidak ada jawaban yang dipilih.';
         } elseif ($maxScore === $scoreA && $maxScore === $scoreB && $maxScore === $scoreC) {
-            $recommendation = 'Rekomendasi Jurusan: Kuliner, Pengelasan, atau Logistik (Minat merata)';
+            $recommendation = 'Kuliner, Pengelasan, atau Logistik (Minat merata)';
         } elseif ($maxScore === $scoreA && $maxScore === $scoreB) {
-            $recommendation = 'Rekomendasi Jurusan: Kuliner atau Pengelasan';
+            $recommendation = 'Kuliner atau Pengelasan';
         } elseif ($maxScore === $scoreA && $maxScore === $scoreC) {
-            $recommendation = 'Rekomendasi Jurusan: Kuliner atau Logistik';
+            $recommendation = 'Kuliner atau Logistik';
         } elseif ($maxScore === $scoreB && $maxScore === $scoreC) {
-            $recommendation = 'Rekomendasi Jurusan: Pengelasan atau Logistik';
+            $recommendation = 'Pengelasan atau Logistik';
         } elseif ($maxScore === $scoreA) {
-            $recommendation = 'Rekomendasi Jurusan: Kuliner';
+            $recommendation = 'Kuliner';
         } elseif ($maxScore === $scoreB) {
-            $recommendation = 'Rekomendasi Jurusan: Pengelasan';
+            $recommendation = 'Pengelasan';
         } elseif ($maxScore === $scoreC) {
-            $recommendation = 'Rekomendasi Jurusan: Logistik';
+            $recommendation = 'Logistik';
         } else {
-            $recommendation = 'Tidak dapat menentukan rekomendasi. Silakan coba lagi.';
+            $recommendation = '-';
         }
 
         // Simpan total skor (misal: jumlah semua poin A, B, C)
@@ -141,7 +141,7 @@ class MinatBakatController extends Controller
             'end_time' => Carbon::now(),
             'score' => $totalScore, // Simpan total score dari minat bakat
             'status' => 'completed',
-            'notes' => $recommendation, // Simpan rekomendasi di kolom 'notes' atau kolom khusus
+            'recommended_major' => $recommendation,
         ]);
 
         // Setelah submit, arahkan ke halaman hasil jika semua ujian sudah selesai
