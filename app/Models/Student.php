@@ -19,6 +19,8 @@ class Student extends Model
         'smp',
         'pilihan_jurusan_1',
         'pilihan_jurusan_2',
+        'skor_jurusan_1',
+        'skor_jurusan_2',
     ];
 
     public function user()

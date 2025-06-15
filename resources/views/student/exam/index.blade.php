@@ -90,11 +90,11 @@
                             } elseif ($currentStudentExam->status === 'in_progress') {
                             $buttonText = 'Lanjutkan Ujian';
                             $buttonClass = 'bg-orange-500 hover:bg-orange-600';
-                            $actionRoute = route('student.exam.start', $exam);
+                            $actionRoute = route('student.exam.minatbakat', $exam);
                             }
                             } else {
                             $buttonText = 'Mulai Mengerjakan';
-                            $actionRoute = route('student.exam.start', $exam);
+                            $actionRoute = route('student.exam.minatbakat', $exam);
                             }
                             }
                             @endphp

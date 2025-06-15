@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('smp');
             $table->string('pilihan_jurusan_1');
             $table->string('pilihan_jurusan_2');
+            $table->integer('skor_jurusan_1')->nullable();
+            $table->integer('skor_jurusan_2')->nullable();
             $table->timestamps();
         });
     }

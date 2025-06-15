@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Exam;
+use App\Models\Student; // Pastikan model Student diimpor
 use App\Models\StudentExam;
 use Carbon\Carbon;
 
@@ -16,7 +17,6 @@ class UjianTPAController extends Controller
         $student = $user->student; // ini dapetin data dari table students
 
         $exam = Exam::where('name', 'TPA')->firstOrFail();
-        
 
         $studentExam = StudentExam::firstOrCreate(
             [
@@ -29,7 +29,20 @@ class UjianTPAController extends Controller
             ]
         );
 
-        // Soal hardcoded per jurusan
+        // Hanya tampilkan soal jika status belum completed
+        if ($studentExam->status === 'completed') {
+            // Arahkan ke halaman hasil jika ujian TPA sudah selesai
+            return redirect()->route('student.exam.results')->with('info', 'Anda telah menyelesaikan Ujian TPA.');
+        }
+
+        // Pastikan siswa sudah mengisi pilihan jurusan
+        if (empty($student->pilihan_jurusan_1) || empty($student->pilihan_jurusan_2)) {
+            // Jika pilihan jurusan belum diisi, arahkan ke halaman pengisian data
+            return redirect()->route('student.register_data.edit')->with('error', 'Harap lengkapi pilihan jurusan Anda terlebih dahulu sebelum mengerjakan TPA.');
+        }
+
+        // Soal hardcoded per jurusan (Kuliner, Logistik, Pengelasan)
+        // Setiap array soal memiliki 15 pertanyaan
         $soalKuliner = [
             [
                 'pertanyaan' => 'Tata boga adalah ilmu yang mempelajari tentang...',
@@ -264,27 +277,43 @@ class UjianTPAController extends Controller
             ],
         ];
 
-
         $soalTPA = [];
         $kunciJawaban = [];
+        $jurusan1_nama = $student->pilihan_jurusan_1;
+        $jurusan2_nama = $student->pilihan_jurusan_2;
 
-        $jurusan1 = $student->pilihan_jurusan_1; // misalnya 'Kuliner'
-        $jurusan2 = $student->pilihan_jurusan_2; // misalnya 'Logistik'
+        // Ambil soal dan kunci jawaban untuk jurusan pilihan 1
+        if ($jurusan1_nama === 'Kuliner') {
+            $soalTPA = array_merge($soalTPA, $soalKuliner);
+            foreach ($soalKuliner as $soal) {
+                $kunciJawaban[] = $soal['jawaban'];
+            }
+        } elseif ($jurusan1_nama === 'Logistik') {
+            $soalTPA = array_merge($soalTPA, $soalLogistik);
+            foreach ($soalLogistik as $soal) {
+                $kunciJawaban[] = $soal['jawaban'];
+            }
+        } elseif ($jurusan1_nama === 'Pengelasan') {
+            $soalTPA = array_merge($soalTPA, $soalPengelasan);
+            foreach ($soalPengelasan as $soal) {
+                $kunciJawaban[] = $soal['jawaban'];
+            }
+        }
 
-
-
-        foreach ([$jurusan1, $jurusan2] as $jurusan) {
-            if ($jurusan === 'Kuliner') {
+        // Ambil soal dan kunci jawaban untuk jurusan pilihan 2
+        // Pastikan tidak ada duplikasi jika jurusan 1 dan 2 sama (meskipun jarang terjadi untuk TPA)
+        if ($jurusan1_nama !== $jurusan2_nama) {
+            if ($jurusan2_nama === 'Kuliner') {
                 $soalTPA = array_merge($soalTPA, $soalKuliner);
                 foreach ($soalKuliner as $soal) {
                     $kunciJawaban[] = $soal['jawaban'];
                 }
-            } elseif ($jurusan === 'Logistik') {
+            } elseif ($jurusan2_nama === 'Logistik') {
                 $soalTPA = array_merge($soalTPA, $soalLogistik);
                 foreach ($soalLogistik as $soal) {
                     $kunciJawaban[] = $soal['jawaban'];
                 }
-            } elseif ($jurusan === 'Pengelasan') {
+            } elseif ($jurusan2_nama === 'Pengelasan') {
                 $soalTPA = array_merge($soalTPA, $soalPengelasan);
                 foreach ($soalPengelasan as $soal) {
                     $kunciJawaban[] = $soal['jawaban'];
@@ -292,30 +321,68 @@ class UjianTPAController extends Controller
             }
         }
 
-
+        // Simpan kunci jawaban ke session untuk validasi saat submit
         session(['tpa_kunci' => $kunciJawaban]);
 
         return view('student.exam.tpa', [
             'exam' => $exam,
             'studentExam' => $studentExam,
-            'soalTPA' => $soalTPA
+            'soalTPA' => $soalTPA,
+            'jurusan1_nama' => $jurusan1_nama, // Kirim nama jurusan ke view jika diperlukan
+            'jurusan2_nama' => $jurusan2_nama,
         ]);
     }
 
     public function submit(Request $request)
     {
         $user = Auth::user();
-        $student = $user->student; // ini dapetin data dari table students
+        $student = $user->student;
         $exam = Exam::where('name', 'TPA')->firstOrFail();
 
         $kunciJawaban = session('tpa_kunci');
 
-        $score = 0;
+        $scoreJurusan1 = 0;
+        $scoreJurusan2 = 0;
+        $pointsPerCorrectAnswer = 2; // Setiap soal TPA bernilai 2 poin
+
+        $jurusan1_nama = $student->pilihan_jurusan_1;
+        $jurusan2_nama = $student->pilihan_jurusan_2;
+
+        // Asumsi: Jumlah soal per jurusan adalah 15.
+        // Soal untuk jurusan_1 akan menjadi 15 soal pertama, dan jurusan_2 adalah 15 soal berikutnya.
+        $numQuestionsPerMajor = 15;
+        $totalQuestions = count($kunciJawaban); // Ini harusnya 30 jika 2 jurusan dipilih
+
         foreach ($kunciJawaban as $index => $kunci) {
-            if ((int)($request->input('answers')[$index] ?? -1) === $kunci) {
-                $score += 2; // bobot 2 per soal
+            $answer = (int)($request->input('answers')[$index] ?? -1); // Jawaban siswa
+
+            if ($answer === $kunci) { // Jika jawaban benar
+                if ($index < $numQuestionsPerMajor) { // Soal untuk jurusan pertama
+                    $scoreJurusan1 += $pointsPerCorrectAnswer;
+                } else { // Soal untuk jurusan kedua
+                    $scoreJurusan2 += $pointsPerCorrectAnswer;
+                }
             }
         }
+
+        // Simpan skor masing-masing jurusan ke model Student
+        $student->update([
+            'skor_jurusan_1' => $scoreJurusan1,
+            'skor_jurusan_2' => $scoreJurusan2,
+        ]);
+
+        // Tentukan rekomendasi jurusan TPA berdasarkan skor tertinggi
+        $recommendationTPA = '';
+        if ($scoreJurusan1 > $scoreJurusan2) {
+            $recommendationTPA = $jurusan1_nama;
+        } elseif ($scoreJurusan2 > $scoreJurusan1) {
+            $recommendationTPA = $jurusan2_nama;
+        } else {
+            $recommendationTPA = 'Skor untuk kedua jurusan sama tinggi: ' . $jurusan1_nama . ' dan ' . $jurusan2_nama;
+        }
+
+        // Simpan total skor TPA (jumlah kedua skor jurusan) ke StudentExam
+        $totalScoreTPA = $scoreJurusan1 + $scoreJurusan2;
 
         $studentExam = StudentExam::where('student_id', $student->id)
             ->where('exam_id', $exam->id)
@@ -323,11 +390,29 @@ class UjianTPAController extends Controller
 
         $studentExam->update([
             'end_time' => Carbon::now(),
-            'score' => $score,
+            'score' => $totalScoreTPA,
             'status' => 'completed',
+            'notes' => $recommendationTPA, // Simpan rekomendasi jurusan TPA di kolom 'notes'
         ]);
 
-        return redirect()
-            ->route('student.exam.index');
+        // Cek apakah semua ujian (TKD, TPA, Minat Bakat) sudah selesai
+        $isTKDCompleted = $student->studentExams()->whereHas('exam', function ($query) {
+            $query->where('name', 'TKD');
+        })->where('status', 'completed')->exists();
+
+        $isMinatBakatCompleted = $student->studentExams()->whereHas('exam', function ($query) {
+            $query->where('name', 'Minat Bakat');
+        })->where('status', 'completed')->exists();
+
+        // Ujian TPA baru saja disubmit, jadi statusnya pasti completed
+        $isTPACompleted = true;
+
+        if ($isTKDCompleted && $isTPACompleted && $isMinatBakatCompleted) {
+            // Jika semua ujian selesai, arahkan ke halaman hasil akhir
+            return redirect()->route('student.exam.results');
+        } else {
+            // Jika masih ada ujian yang belum selesai, arahkan kembali ke daftar ujian
+            return redirect()->route('student.exam.index')->with('success', 'Ujian TPA selesai. Anda dapat melanjutkan ujian lainnya.');
+        }
     }
 }

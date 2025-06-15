@@ -15,7 +15,7 @@ class UjianTKDController extends Controller
         $user = Auth::user();
         $student = $user->student; // ini dapetin data dari table students
         $exam = Exam::where('name', 'TKD')->firstOrFail();
-        
+
 
 
         $studentExam = StudentExam::firstOrCreate(
@@ -312,15 +312,16 @@ class UjianTKDController extends Controller
     public function submit(Request $request)
     {
         $user = Auth::user();
-        $student = $user->student; // ini dapetin data dari table students
+        $student = $user->student;
         $exam = Exam::where('name', 'TKD')->firstOrFail();
 
         $kunciJawaban = session('tkd_kunci');
         $score = 0;
+        $pointsPerCorrectAnswer = 1; // 1 soal TKD bernilai 1 point
 
         foreach ($kunciJawaban as $index => $kunci) {
             if ((int)($request->input('answers')[$index] ?? -1) === $kunci) {
-                $score += 2;
+                $score += $pointsPerCorrectAnswer;
             }
         }
 
@@ -334,6 +335,22 @@ class UjianTKDController extends Controller
             'status' => 'completed',
         ]);
 
-        return redirect()->route('student.exam.index');
+        // Cek apakah semua ujian sudah selesai
+        $isTPACompleted = $student->studentExams()->whereHas('exam', function ($query) {
+            $query->where('name', 'TPA');
+        })->where('status', 'completed')->exists();
+
+        $isMinatBakatCompleted = $student->studentExams()->whereHas('exam', function ($query) {
+            $query->where('name', 'Minat Bakat');
+        })->where('status', 'completed')->exists();
+
+        // Sudah pasti TKD completed karena baru saja disubmit
+        $isTKDCompleted = true;
+
+        if ($isTKDCompleted && $isTPACompleted && $isMinatBakatCompleted) {
+            return redirect()->route('student.exam.results');
+        } else {
+            return redirect()->route('student.exam.index')->with('success', 'Ujian TKD selesai. Anda dapat melanjutkan ujian lainnya.');
+        }
     }
 }

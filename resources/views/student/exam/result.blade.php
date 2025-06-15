@@ -1,78 +1,70 @@
+{{-- resources/views/student/exam/results.blade.php --}}
+
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Hasil Ujian: ') . $studentExam->exam->name }}
+            {{ __('Hasil Akhir Ujian & Rekomendasi Jurusan') }}
         </h2>
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    <h3 class="text-2xl font-bold mb-6">Hasil Ujian {{ $studentExam->exam->name }}</h3>
+                    <h3 class="text-2xl font-bold mb-6 text-center">Rekap Hasil Ujian Anda</h3>
 
-                    @if($studentExam->exam->name === 'Minat Bakat')
-                        <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative mb-6">
-                            <p class="font-bold text-lg">Rekomendasi Jurusan Berdasarkan Minat Bakat Anda:</p>
-                            <p class="text-xl mt-2">{{ $minatBakatRecommendation ?? 'Tidak dapat menentukan rekomendasi. Mungkin Anda tidak menjawab semua soal.' }}</p>
-                        </div>
-                    @else
-                        <div class="mb-4">
-                            <p class="text-lg">Total Skor Anda: <span class="font-bold text-green-600">{{ $studentExam->score }}</span></p>
-                            @php
-                                $totalQuestions = $studentExam->exam->questions->count();
-                                $answeredQuestionsCount = $studentExam->studentAnswers->count();
-                            @endphp
-                            <p class="text-md text-gray-600">Total Soal Dijawab: {{ $answeredQuestionsCount }} dari {{ $totalQuestions }}</p>
-                        </div>
-                    @endif
-
-                    <h4 class="text-xl font-semibold mb-4 mt-8">Detail Jawaban Anda:</h4>
                     <div class="space-y-6">
-                        @foreach($studentExam->exam->questions->sortBy('id') as $question)
-                            @php
-                                $studentAnswer = $studentExam->studentAnswers->where('question_id', $question->id)->first();
-                                $chosenAnswerText = $studentAnswer->chosenAnswer->answer_text ?? 'Tidak dijawab';
-                                $isCorrect = ($studentExam->exam->name !== 'Minat Bakat' && $studentAnswer && $studentAnswer->chosenAnswer->is_correct);
-                                $answerClass = '';
-                                if ($studentExam->exam->name !== 'Minat Bakat') {
-                                    $answerClass = $studentAnswer ? ($isCorrect ? 'bg-green-100 border-green-400' : 'bg-red-100 border-red-400') : 'bg-gray-100 border-gray-300';
-                                } else {
-                                    $answerClass = 'bg-indigo-100 border-indigo-400'; // Warna netral untuk minat bakat
-                                }
-                            @endphp
-                            <div class="p-4 rounded-lg border {{ $answerClass }}">
-                                <p class="font-medium text-gray-800 mb-2">
-                                    {{ $loop->index + 1 }}. {!! nl2br(e($question->question_text)) !!}
-                                </p>
-                                <p class="text-sm text-gray-700">
-                                    Jawaban Anda: <span class="font-semibold">{{ $chosenAnswerText }}</span>
-                                    @if ($studentExam->exam->name !== 'Minat Bakat')
-                                        @if ($studentAnswer)
-                                            <span class="ml-2 font-bold {{ $isCorrect ? 'text-green-600' : 'text-red-600' }}">
-                                                ({{ $isCorrect ? 'Benar' : 'Salah' }})
-                                            </span>
-                                        @else
-                                            <span class="ml-2 font-bold text-gray-500">(Tidak Dijawab)</span>
-                                        @endif
-                                        @unless($isCorrect)
-                                            <br>Jawaban Benar: <span class="font-semibold text-green-600">
-                                                {{ $question->correct_answer->answer_text ?? 'N/A' }}
-                                            </span>
-                                        @endunless
-                                    @else
-                                        {{-- Untuk minat bakat, bisa tambahkan informasi pilihan A/B/C mengarah ke mana --}}
-                                        @if ($studentAnswer && $studentAnswer->chosenAnswer->meta_data)
-                                            <span class="ml-2 text-indigo-700 font-semibold">(Mengarah ke: {{ $studentAnswer->chosenAnswer->meta_data }})</span>
-                                        @endif
-                                    @endif
-                                </p>
-                            </div>
-                        @endforeach
+                        {{-- Hasil Ujian TKD --}}
+                        <div class="border rounded-lg p-4 bg-blue-50">
+                            <h4 class="text-xl font-semibold mb-2 text-blue-800">Ujian TKD</h4>
+                            @if($tkdResult)
+                                <p>Skor Anda: <span class="font-bold text-lg">{{ $tkdResult->score ?? 'N/A' }}</span></p>
+                                <p class="text-sm text-gray-600">Total soal TKD: {{ $tkdTotalQuestions ?? 'N/A' }}</p>
+                                <p class="text-sm text-gray-600">Nilai per soal: 1 poin</p>
+                            @else
+                                <p class="text-red-600">Data Ujian TKD tidak ditemukan atau belum selesai.</p>
+                            @endif
+                        </div>
+
+                        {{-- Hasil Ujian TPA --}}
+                        <div class="border rounded-lg p-4 bg-green-50">
+                            <h4 class="text-xl font-semibold mb-2 text-green-800">Ujian TPA</h4>
+                            @if($tpaResult && $student)
+                                <p>Skor {{ $student->pilihan_jurusan_1 ?? 'Jurusan 1' }}: <span class="font-bold text-lg">{{ $student->skor_jurusan_1 ?? 'N/A' }}</span></p>
+                                <p>Skor {{ $student->pilihan_jurusan_2 ?? 'Jurusan 2' }}: <span class="font-bold text-lg">{{ $student->skor_jurusan_2 ?? 'N/A' }}</span></p>
+                                <p>Rekomendasi TPA: <span class="font-bold text-lg text-green-700">{{ $tpaResult->notes ?? 'N/A' }}</span></p>
+                                <p class="text-sm text-gray-600">Nilai per soal: 2 poin</p>
+                            @else
+                                <p class="text-red-600">Data Ujian TPA tidak ditemukan atau belum selesai.</p>
+                            @endif
+                        </div>
+
+                        {{-- Hasil Ujian Minat Bakat --}}
+                        <div class="border rounded-lg p-4 bg-yellow-50">
+                            <h4 class="text-xl font-semibold mb-2 text-yellow-800">Tes Minat Bakat</h4>
+                            @if($minatBakatResult)
+                                <p>Rekomendasi Minat Bakat: <span class="font-bold text-lg text-yellow-700">{{ $minatBakatResult->notes ?? 'N/A' }}</span></p>
+                                <p class="text-sm text-gray-600">Total poin Minat Bakat: {{ $minatBakatResult->score ?? 'N/A' }}</p>
+                                <p class="text-sm text-gray-600">Nilai per soal: 4 poin</p>
+                            @else
+                                <p class="text-red-600">Data Tes Minat Bakat tidak ditemukan atau belum selesai.</p>
+                            @endif
+                        </div>
                     </div>
-                    <div class="mt-8">
-                        <a href="{{ route('student.exam.index') }}" class="inline-block px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
-                            {{ __('Kembali ke Daftar Ujian') }}
+
+                    <div class="mt-8 pt-4 border-t border-gray-200">
+                        <h3 class="text-2xl font-bold mb-4 text-center text-indigo-700">Rekomendasi Jurusan Akhir Anda</h3>
+                        <p class="text-center text-xl font-semibold text-gray-800">
+                            {{ $finalRecommendation }}
+                        </p>
+                        <p class="text-center text-sm text-gray-500 mt-2">
+                            Rekomendasi ini didasarkan pada hasil Ujian TPA dan Tes Minat Bakat Anda.
+                        </p>
+                    </div>
+
+                    <div class="mt-8 text-center">
+                        <a href="{{ route('student.dashboard') }}" class="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700 text-lg">
+                            Kembali ke Dashboard
                         </a>
                     </div>
                 </div>

@@ -12,20 +12,20 @@ class ExamSeeder extends Seeder
     {
         Exam::create([
             'name' => 'TKD',
-            'description' => 'Tes Kemampuan Dasar meliputi berbagai mata pelajaran.',
+            'description' => '50 soal',
             'duration_minutes' => 90, // 90 menit untuk TKD
         ]);
 
         Exam::create([
             'name' => 'TPA',
-            'description' => 'Tes Potensi Akademik.',
-            'duration_minutes' => 60,
+            'description' => '30 Soal',
+            'duration_minutes' => 45,
         ]);
 
         Exam::create([
             'name' => 'Minat Bakat',
-            'description' => 'Tes Minat dan Bakat.',
-            'duration_minutes' => 45,
+            'description' => '5 soal',
+            'duration_minutes' => 20,
         ]);
     }
 }

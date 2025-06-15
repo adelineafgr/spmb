@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdminController; // Pastikan ini diimpor dengan benar
+use App\Http\Controllers\MinatBakatController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\Student\ExamController;
 use App\Http\Controllers\UjianTKDController; // Pastikan ini diimpor dengan benar
@@ -43,6 +44,8 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
     Route::post('/register-data', [StudentController::class, 'storeRegistrationData'])->name('register_data.store');
     Route::get('/edit-data', [StudentController::class, 'editRegistrationForm'])->name('register_data.edit');
     Route::put('/edit-data', [StudentController::class, 'updateRegistrationData'])->name('register_data.update');
+    Route::get('/exams', [ExamController::class, 'index'])->name('exam.index');
+    Route::get('/exams/results', [ExamController::class, 'showResults'])->name('exam.results');
 
     // Rute Ujian
     Route::prefix('exam')->name('exam.')->group(function () {
@@ -62,14 +65,13 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
 });
 
 
-Route::get('/ujian/tkd', [UjianTKDController::class, 'index'])->name('student.exam.tkd');
-Route::post('/ujian/tkd', [UjianTKDController::class, 'submit'])->name('student.exam.tkd.submit');
-
-
-
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/ujian/tpa', [UjianTPAController::class, 'index'])->name('student.exam.tpa');
     Route::post('/ujian/tpa/submit', [UjianTPAController::class, 'submit'])->name('ujian.tpa.submit');
+    Route::get('/ujian/tkd', [UjianTKDController::class, 'index'])->name('student.exam.tkd');
+    Route::post('/ujian/tkd', [UjianTKDController::class, 'submit'])->name('student.exam.tkd.submit');
+    Route::get('/ujian/minatbakat', [MinatBakatController::class, 'index'])->name('student.exam.minatbakat');
+    Route::post('/ujian/minatbakat', [MinatBakatController::class, 'submit'])->name('student.exam.minatbakat.submit');
 });
 
 
