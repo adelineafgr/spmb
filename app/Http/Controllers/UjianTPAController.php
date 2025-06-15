@@ -555,11 +555,11 @@ class UjianTPAController extends Controller
         ];
 
         // Fungsi ambil soal sesuai jurusan
-        $ambilSoal = function ($jurusan) use ($soalKuliner, $soalPengelasan, $soalLogistik) {
+        $ambilSoal = function ($jurusan) use ($soalKuliner, $soalLogistik, $soalPengelasan) {
             return match ($jurusan) {
                 'Kuliner' => $soalKuliner,
-                'Pengelasan' => $soalPengelasan,
                 'Logistik' => $soalLogistik,
+                'Pengelasan' => $soalPengelasan,
                 default => [],
             };
         };
@@ -567,39 +567,49 @@ class UjianTPAController extends Controller
         $soal1 = $ambilSoal($jurusan1);
         $soal2 = $ambilSoal($jurusan2);
 
-        $jawabanUser = $request->input('jawaban', []);
-
-        // Skor jurusan 1
+        // Scoring jurusan 1
         $skor1 = 0;
-        foreach ($soal1 as $i => $soal) {
-            $index = $i;
-            if (isset($jawabanUser[$index]) && $jawabanUser[$index] == $soal['jawaban']) {
+        foreach ($soal1 as $index => $soal) {
+            $inputName = "jawaban_{$jurusan1}_{$index}";
+            $jawabanUser = $request->input($inputName);
+            if ($jawabanUser !== null && $jawabanUser == $soal['jawaban']) {
                 $skor1++;
             }
+            
         }
+        $skor1 *= 2; // Skor jurusan 1 dikali 2
 
-        // Skor jurusan 2
+        // Scoring jurusan 2
         $skor2 = 0;
-        foreach ($soal2 as $i => $soal) {
-            $index = $i + count($soal1); // offset setelah soal jurusan 1
-            if (isset($jawabanUser[$index]) && $jawabanUser[$index] == $soal['jawaban']) {
+        foreach (range(0, 14) as $i) {
+            $soal = $soal2[$i];
+            $inputName = "jawaban_{$jurusan2}_" . ($i + 15); // offset 15 dari index soal pertama
+            $jawabanUser = $request->input($inputName);
+            if ($jawabanUser !== null && $jawabanUser == $soal['jawaban']) {
                 $skor2++;
             }
+            // Skor jurusan 2 dikali 2
         }
+        $skor2 *= 2; 
 
-        $jurusanDipilih = $skor1 >= $skor2 ? $jurusan1 : $jurusan2;
+
+        // Pilih yang lebih tinggi
         $nilaiAkhir = max($skor1, $skor2);
+        $jurusanDipilih = $skor1 >= $skor2 ? $jurusan1 : $jurusan2;
+
+        dd($nilaiAkhir, $jurusanDipilih, $jurusan1, $jurusan2, $skor1, $skor2);
+
 
         StudentExam::updateOrCreate(
-            ['student_id' => $student->id, 'exam_id' => 2], // 2 = TPA
+            ['student_id' => $student->id, 'exam_id' => 2],
             [
                 'score' => $nilaiAkhir,
                 'recommended_major' => $jurusanDipilih,
                 'status' => 'completed',
-                'end_time' => now()
+                'end_time' => now(),
             ]
         );
 
-        return redirect()->route('student.exam.index')->with('success', 'Ujian TPA berhasil disimpan!');
+        return redirect()->route('student.exam.index')->with('success', 'TPA berhasil disimpan!');
     }
 }
